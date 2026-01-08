@@ -6,9 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "lint-staged": {
-    "*.ts": [
-      "eslint --fix",
-      "prettier --write"
+    "**/*.ts": [
+      "eslint --fix --ignore-pattern old/** --ignore-pattern prisma/**",
+      "prettier --write --ignore-path .gitignore"
     ]
   },
   "scripts": {

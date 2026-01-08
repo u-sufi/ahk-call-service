@@ -6,7 +6,16 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: [
+      'eslint.config.mjs',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/coverage/**',
+      // keep legacy code for reference, but don't lint/typecheck it
+      'old/**',
+      // prisma contains generated artifacts at times; we don't lint those
+      'prisma/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
