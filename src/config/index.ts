@@ -4,3 +4,4 @@ export * from './redis.config';
 export * from './jwt.config';
 export * from './storage.config';
 export * from './logger.config';
+export * from './freeswitch.config';

@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RedisModule } from './core/redis/redis.module';
 import { LoggerModule } from './logger';
+import { CallModule } from './call/call.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { LoggerModule } from './logger';
     }),
     LoggerModule,
     RedisModule,
+    CallModule,
   ],
   controllers: [AppController],
   providers: [AppService],
