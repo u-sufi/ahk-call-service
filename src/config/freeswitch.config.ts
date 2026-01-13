@@ -27,4 +27,20 @@ export class FreeswitchConfig {
   @IsString()
   @Value('TELNYX_CALLER_ID', { default: '+19495431333' })
   telnyxCallerId: string;
+
+  /**
+   * Domain used for user/extension dialing inside FreeSWITCH, e.g. user/1000@157.173.117.207
+   */
+  @IsNotEmpty()
+  @IsString()
+  @Value('FS_DOMAIN', { default: '157.173.117.207' })
+  domain: string;
+
+  /**
+   * Default agent extension used for bridge on initiate (server-side guidance).
+   */
+  @IsNotEmpty()
+  @IsNumber()
+  @Value('FS_DEFAULT_AGENT_EXT', { parse: Number.parseInt, default: '1000' })
+  defaultAgentExtension: number;
 }

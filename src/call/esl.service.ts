@@ -204,6 +204,37 @@ export class EslService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  async originateBridgeToUser(
+    toE164: string,
+    agentExtension: string,
+    fromE164?: string,
+    timeoutSeconds = 60,
+  ): Promise<string> {
+    if (!this.conn || !this.connected) {
+      throw new Error('ESL is not connected');
+    }
+
+    const vars = [
+      `origination_caller_id_number=${fromE164 || this.fsConfig.telnyxCallerId}`,
+      `origination_timeout=${timeoutSeconds}`,
+      'call_direction=outbound',
+    ].join(',');
+
+    const dialString = `sofia/gateway/${this.fsConfig.telnyxGateway}/${toE164}`;
+    const app = `&bridge(user/${agentExtension}@${this.fsConfig.domain})`;
+    const cmd = `{${vars}}${dialString} ${app}`;
+
+    return new Promise((resolve, reject) => {
+      this.conn!.api(`originate ${cmd}`, (res: EslResponse) => {
+        const body = isEslResponse(res) ? res.getBody() : String(res);
+        const ok = body.match(/\+OK\s+([a-f0-9-]+)/i);
+        if (ok?.[1]) return resolve(ok[1]);
+        if (body.includes('-ERR')) return reject(new Error(body.trim()));
+        return resolve(body.trim());
+      });
+    });
+  }
+
   async hangup(uuid: string): Promise<void> {
     if (!this.conn || !this.connected) {
       throw new Error('ESL is not connected');

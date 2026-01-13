@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EslService } from './esl.service';
 import { LoggerService } from '../logger';
+import { FreeswitchConfig } from '../config';
 
 @Injectable()
 export class CallsService {
   constructor(
     private readonly esl: EslService,
     private readonly logger: LoggerService,
+    private readonly fsConfig: FreeswitchConfig,
   ) {
     this.logger.setContext(CallsService.name);
   }
@@ -31,7 +33,13 @@ export class CallsService {
     return { callUuid: uuid, destinationNumber: destinationE164 };
   }
 
-  async initiate(to: string, from?: string) {
+  /**
+   * Initiate outbound call via Telnyx and then bridge to an internal agent user.
+   * DevOps requested: replace &park() with &bridge(user/1000@<domain>)
+   *
+   * If agentExtension is omitted, uses FS_DEFAULT_AGENT_EXT.
+   */
+  async initiate(to: string, from?: string, agentExtension?: string) {
     const toE164 = to.replace(/[^\d+]/g, '');
     if (toE164.length < 10)
       throw new BadRequestException('Invalid "to" number');
@@ -41,11 +49,20 @@ export class CallsService {
       throw new BadRequestException('Invalid "from" number');
     }
 
+    const ext =
+      (agentExtension && agentExtension.trim()) ||
+      String(this.fsConfig.defaultAgentExtension);
+
     this.logger.log(
-      `Originate (park) → to=${toE164} from=${fromE164 ?? 'default'}`,
+      `Originate (bridge) → to=${toE164} from=${fromE164 ?? 'default'} agent=${ext}@${this.fsConfig.domain}`,
     );
-    const uuid = await this.esl.originatePark(toE164, fromE164);
-    return { callUuid: uuid, to: toE164, from: fromE164 ?? null };
+    const uuid = await this.esl.originateBridgeToUser(toE164, ext, fromE164);
+    return {
+      callUuid: uuid,
+      to: toE164,
+      from: fromE164 ?? null,
+      agent: { extension: ext, domain: this.fsConfig.domain },
+    };
   }
 
   async hangup(uuid: string) {

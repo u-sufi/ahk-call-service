@@ -19,8 +19,8 @@ export class CallsController {
 
   // POST /api/calls/initiate
   @Post('initiate')
-  initiate(@Body() body: { to: string; from?: string }) {
-    return this.calls.initiate(body.to, body.from);
+  initiate(@Body() body: { to: string; from?: string; agentExt?: string }) {
+    return this.calls.initiate(body.to, body.from, body.agentExt);
   }
 
   // DELETE /api/calls/:uuid
