@@ -10,7 +10,7 @@ export class AppConfig {
 
   @IsNotEmpty()
   @IsNumber()
-  @Value('PORT', { parse: Number.parseInt, default: '3000' })
+  @Value('PORT', { parse: Number.parseInt, default: '3065' })
   port: number;
 
   @IsNotEmpty()
