@@ -1,0 +1,799 @@
+{
+  "info": {
+    "name": "AHK Call Service API",
+    "description": "Complete API collection for FreeSWITCH Call Service Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "ahk-call-service-api"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3065/api",
+      "type": "string"
+    },
+    {
+      "key": "agentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "agentExtension",
+      "value": "1020",
+      "type": "string"
+    },
+    {
+      "key": "routeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "callUuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cdrId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "App Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            },
+            "description": "Check if the application is running"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Agents",
+      "item": [
+        {
+          "name": "Create Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set('agentId', jsonData.data.id);",
+                  "    pm.collectionVariables.set('agentExtension', jsonData.data.extension);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"extension\": \"1020\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"callerIdName\": \"John Doe\",\n    \"callerIdNumber\": \"1020\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agents",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents"]
+            },
+            "description": "Create a new agent/extension. Returns credentials for WebRTC/SIP client."
+          }
+        },
+        {
+          "name": "List All Agents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents"]
+            },
+            "description": "Get all active agents"
+          }
+        },
+        {
+          "name": "Get Agent by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/{{agentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "{{agentId}}"]
+            },
+            "description": "Get a single agent by UUID"
+          }
+        },
+        {
+          "name": "Get Agent by Extension",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/extension/{{agentExtension}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "extension", "{{agentExtension}}"]
+            },
+            "description": "Get agent by extension number"
+          }
+        },
+        {
+          "name": "Get Agent Credentials",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/{{agentId}}/credentials",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "{{agentId}}", "credentials"]
+            },
+            "description": "Get SIP/WebRTC credentials for an agent to connect to FreeSWITCH"
+          }
+        },
+        {
+          "name": "Get Agent Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/{{agentId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "{{agentId}}", "status"]
+            },
+            "description": "Check if agent is online (registered to FreeSWITCH)"
+          }
+        },
+        {
+          "name": "Update Agent",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"John Doe Updated\",\n    \"email\": \"john.updated@example.com\",\n    \"callerIdName\": \"John D.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agents/{{agentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "{{agentId}}"]
+            },
+            "description": "Update an agent's information"
+          }
+        },
+        {
+          "name": "Regenerate Agent Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/{{agentId}}/regenerate-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "{{agentId}}", "regenerate-password"]
+            },
+            "description": "Generate a new password for an agent"
+          }
+        },
+        {
+          "name": "Delete Agent",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agents/{{agentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["agents", "{{agentId}}"]
+            },
+            "description": "Soft delete an agent (sets isActive to false)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inbound Routes",
+      "item": [
+        {
+          "name": "Create Inbound Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set('routeId', jsonData.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"didNumber\": \"+19495431333\",\n    \"destinationExtension\": \"1020\",\n    \"description\": \"Main sales line\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/inbound-routes",
+              "host": ["{{baseUrl}}"],
+              "path": ["inbound-routes"]
+            },
+            "description": "Create a new inbound route to map a DID to an agent extension"
+          }
+        },
+        {
+          "name": "List All Inbound Routes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inbound-routes",
+              "host": ["{{baseUrl}}"],
+              "path": ["inbound-routes"]
+            },
+            "description": "Get all active inbound routes"
+          }
+        },
+        {
+          "name": "Get Inbound Route by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inbound-routes/{{routeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["inbound-routes", "{{routeId}}"]
+            },
+            "description": "Get a single inbound route by UUID"
+          }
+        },
+        {
+          "name": "Get Inbound Route by DID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inbound-routes/did/+19495431333",
+              "host": ["{{baseUrl}}"],
+              "path": ["inbound-routes", "did", "+19495431333"]
+            },
+            "description": "Get inbound route by DID number"
+          }
+        },
+        {
+          "name": "Update Inbound Route",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"destinationExtension\": \"1021\",\n    \"description\": \"Updated sales line\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/inbound-routes/{{routeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["inbound-routes", "{{routeId}}"]
+            },
+            "description": "Update an inbound route"
+          }
+        },
+        {
+          "name": "Delete Inbound Route",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inbound-routes/{{routeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["inbound-routes", "{{routeId}}"]
+            },
+            "description": "Delete an inbound route"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Calls",
+      "item": [
+        {
+          "name": "ESL Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "health"]
+            },
+            "description": "Check if ESL is connected to FreeSWITCH"
+          }
+        },
+        {
+          "name": "Get Active Calls",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "active"]
+            },
+            "description": "Get all currently active calls"
+          }
+        },
+        {
+          "name": "Get Registrations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/registrations",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "registrations"]
+            },
+            "description": "Get all registered extensions from FreeSWITCH"
+          }
+        },
+        {
+          "name": "Get Gateway Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/gateway-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "gateway-status"]
+            },
+            "description": "Get Telnyx gateway status"
+          }
+        },
+        {
+          "name": "Click-to-Call (Dial)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.uuid) {",
+                  "    pm.collectionVariables.set('callUuid', jsonData.data.uuid);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"agentExtension\": \"1020\",\n    \"destination\": \"+18005551234\",\n    \"callerIdNumber\": \"+19495431333\",\n    \"callerIdName\": \"My Company\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/calls/dial",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "dial"]
+            },
+            "description": "Initiate a click-to-call. First calls the agent, then bridges to the destination."
+          }
+        },
+        {
+          "name": "Test Echo Call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"destinationNumber\": \"+18005551234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/calls/test-echo",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "test-echo"]
+            },
+            "description": "Test outbound calling with echo application"
+          }
+        },
+        {
+          "name": "Initiate Call (Legacy)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"to\": \"+18005551234\",\n    \"from\": \"+19495431333\",\n    \"agentExt\": \"1020\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/calls/initiate",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "initiate"]
+            },
+            "description": "Legacy endpoint to initiate outbound call"
+          }
+        },
+        {
+          "name": "Get Call Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/{{callUuid}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "{{callUuid}}", "status"]
+            },
+            "description": "Check if a call exists"
+          }
+        },
+        {
+          "name": "Hangup Call (POST)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/{{callUuid}}/hangup",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "{{callUuid}}", "hangup"]
+            },
+            "description": "Hang up a call by UUID"
+          }
+        },
+        {
+          "name": "Hangup Call (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/{{callUuid}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "{{callUuid}}"]
+            },
+            "description": "Alternative endpoint to hang up a call"
+          }
+        },
+        {
+          "name": "Transfer Call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"destination\": \"1021\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/calls/{{callUuid}}/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "{{callUuid}}", "transfer"]
+            },
+            "description": "Transfer a call to another extension"
+          }
+        },
+        {
+          "name": "Send DTMF",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"digits\": \"1234#\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/calls/{{callUuid}}/dtmf",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "{{callUuid}}", "dtmf"]
+            },
+            "description": "Send DTMF tones to a call"
+          }
+        },
+        {
+          "name": "Hold Call",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/{{callUuid}}/hold",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "{{callUuid}}", "hold"]
+            },
+            "description": "Place a call on hold"
+          }
+        },
+        {
+          "name": "Unhold Call",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/{{callUuid}}/unhold",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "{{callUuid}}", "unhold"]
+            },
+            "description": "Resume a call from hold"
+          }
+        },
+        {
+          "name": "Start Recording",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"filePath\": \"/var/lib/freeswitch/recordings/my-recording.wav\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/calls/{{callUuid}}/record/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "{{callUuid}}", "record", "start"]
+            },
+            "description": "Start recording a call"
+          }
+        },
+        {
+          "name": "Stop Recording",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/{{callUuid}}/record/stop",
+              "host": ["{{baseUrl}}"],
+              "path": ["calls", "{{callUuid}}", "record", "stop"]
+            },
+            "description": "Stop recording a call"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CDR (Call Records)",
+      "item": [
+        {
+          "name": "Create CDR (Internal)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set('cdrId', jsonData.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"uuid\": \"test-uuid-12345\",\n    \"callerIdName\": \"John Doe\",\n    \"callerIdNumber\": \"+18005551234\",\n    \"destinationNumber\": \"1020\",\n    \"direction\": \"inbound\",\n    \"startTime\": \"2026-01-14T10:30:00Z\",\n    \"answerTime\": \"2026-01-14T10:30:05Z\",\n    \"endTime\": \"2026-01-14T10:33:00Z\",\n    \"duration\": 180,\n    \"billsec\": 175,\n    \"hangupCause\": \"NORMAL_CLEARING\",\n    \"agentExtension\": \"1020\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cdr",
+              "host": ["{{baseUrl}}"],
+              "path": ["cdr"]
+            },
+            "description": "Manually create a CDR record (typically done automatically via ESL events)"
+          }
+        },
+        {
+          "name": "List CDR Records",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cdr?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["cdr"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get all call records with pagination"
+          }
+        },
+        {
+          "name": "List CDR with Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cdr?from=2026-01-01T00:00:00Z&to=2026-01-31T23:59:59Z&direction=inbound&agentExtension=1020&limit=50&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["cdr"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-01-01T00:00:00Z"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-01-31T23:59:59Z"
+                },
+                {
+                  "key": "direction",
+                  "value": "inbound"
+                },
+                {
+                  "key": "agentExtension",
+                  "value": "1020"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get call records with date range, direction, and agent filters"
+          }
+        },
+        {
+          "name": "Get CDR Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cdr/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["cdr", "stats"]
+            },
+            "description": "Get call statistics (total calls, inbound/outbound, answered/missed, duration, by agent)"
+          }
+        },
+        {
+          "name": "Get CDR Statistics with Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cdr/stats?from=2026-01-01T00:00:00Z&to=2026-01-31T23:59:59Z&agentExtension=1020",
+              "host": ["{{baseUrl}}"],
+              "path": ["cdr", "stats"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-01-01T00:00:00Z"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-01-31T23:59:59Z"
+                },
+                {
+                  "key": "agentExtension",
+                  "value": "1020"
+                }
+              ]
+            },
+            "description": "Get filtered call statistics"
+          }
+        },
+        {
+          "name": "Get CDR by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cdr/{{cdrId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cdr", "{{cdrId}}"]
+            },
+            "description": "Get a single call record by database ID"
+          }
+        },
+        {
+          "name": "Get CDR by UUID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cdr/uuid/{{callUuid}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cdr", "uuid", "{{callUuid}}"]
+            },
+            "description": "Get call record by FreeSWITCH call UUID"
+          }
+        },
+        {
+          "name": "Get Agent Calls",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cdr/agent/{{agentExtension}}?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["cdr", "agent", "{{agentExtension}}"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get recent calls for a specific agent"
+          }
+        }
+      ]
+    }
+  ]
+}

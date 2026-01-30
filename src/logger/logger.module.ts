@@ -27,4 +27,3 @@ import { createWinstonConfig } from './winston.config';
   exports: [LoggerService, WinstonModule],
 })
 export class LoggerModule {}
-

@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
 import { AppConfig } from './config';
@@ -10,7 +11,7 @@ async function bootstrap() {
   });
 
   // Get the Winston logger and set it as the application logger
-  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+  const logger = app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
 
   const appConfig = app.get(AppConfig);
@@ -18,9 +19,15 @@ async function bootstrap() {
   // CORS (dev): allow frontend to call API from another localhost port
   // Example frontend origin: http://localhost:3465
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       // allow non-browser tools (curl/postman) with no Origin
-      if (!origin) return callback(null, true);
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
 
       // allow any localhost origin during development
       if (
@@ -29,10 +36,11 @@ async function bootstrap() {
         origin.startsWith('https://localhost:') ||
         origin.startsWith('https://127.0.0.1:')
       ) {
-        return callback(null, true);
+        callback(null, true);
+        return;
       }
 
-      return callback(new Error(`CORS blocked origin: ${origin}`), false);
+      callback(new Error(`CORS blocked origin: ${origin}`), false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -44,11 +52,11 @@ async function bootstrap() {
   // Always bind to configured port (default 3065). Fail fast if it's already in use.
   await app.listen(appConfig.port);
 
-  logger.log(
+  logger.log?.(
     `🚀 ${appConfig.appName} is running on port ${appConfig.port}`,
     'Bootstrap',
   );
-  logger.log(`📍 Environment: ${appConfig.nodeEnv}`, 'Bootstrap');
+  logger.log?.(`📍 Environment: ${appConfig.nodeEnv}`, 'Bootstrap');
 }
 
-bootstrap();
+void bootstrap();

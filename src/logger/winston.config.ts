@@ -46,7 +46,13 @@ const createLogFormat = (colorize: boolean, timestamp: boolean) => {
   }
 
   formatters.push(
-    winston.format.printf(({ level, message, timestamp, context, trace }) => {
+    winston.format.printf((info) => {
+      const level = info.level;
+      const message = info.message as string;
+      const timestamp = info.timestamp as string | undefined;
+      const context = info.context as string | undefined;
+      const trace = info.trace as string | undefined;
+
       const contextStr = context ? `[${context}]` : '[Application]';
       const traceStr = trace ? `\n${trace}` : '';
 
@@ -58,11 +64,11 @@ const createLogFormat = (colorize: boolean, timestamp: boolean) => {
           ? `${colors.gray}${timestamp}${colors.reset} `
           : '';
 
-        return `${coloredTimestamp}${coloredContext} ${coloredLevel} ${message}${traceStr}`;
+        return `${coloredTimestamp}${coloredContext} ${coloredLevel} ${String(message)}${traceStr}`;
       }
 
       const timestampStr = timestamp ? `${timestamp} ` : '';
-      return `${timestampStr}${contextStr} ${level.toUpperCase().padEnd(7)} ${message}${traceStr}`;
+      return `${timestampStr}${contextStr} ${level.toUpperCase().padEnd(7)} ${String(message)}${traceStr}`;
     }),
   );
 
@@ -91,4 +97,3 @@ export const createWinstonConfig = (
     ],
   };
 };
-

@@ -1,0 +1,12 @@
+import { Module } from '@nestjs/common';
+import { AgentsController } from './agents.controller';
+import { AgentsService } from './agents.service';
+import { CallModule } from '../call/call.module';
+
+@Module({
+  imports: [CallModule],
+  controllers: [AgentsController],
+  providers: [AgentsService],
+  exports: [AgentsService],
+})
+export class AgentsModule {}
